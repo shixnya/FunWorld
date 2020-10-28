@@ -35,4 +35,5 @@ This is a readme for the first small world environment.
 
 
 # Sample image
-![Sample Image] (images/SampleImage1.png?raw=true "Image")
+
+![Sample Image](images/SampleImage1.png?raw=true "Image")
