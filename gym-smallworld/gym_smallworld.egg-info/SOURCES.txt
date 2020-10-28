@@ -1,0 +1,7 @@
+README.md
+setup.py
+gym_smallworld.egg-info/PKG-INFO
+gym_smallworld.egg-info/SOURCES.txt
+gym_smallworld.egg-info/dependency_links.txt
+gym_smallworld.egg-info/requires.txt
+gym_smallworld.egg-info/top_level.txt
