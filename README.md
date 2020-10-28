@@ -32,3 +32,7 @@ This is a readme for the first small world environment.
   * Adam optimizer with learning rate = 0.001
   * 10000 warm up steps
   * Target model is updated every 10000 steps
+
+
+# Sample image
+![Sample Image] (images/SampleImage1.png?raw=true "Image")
