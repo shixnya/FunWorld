@@ -1,13 +1,13 @@
 import gym
 import numpy as np
-#import pygame
+
+# import pygame
 from gym import error, spaces, utils
 from gym.utils import seeding
 
+
 class SmallWorldEnv(gym.Env):
-    metadata = {'render.modes': ['human'],
-                'video.frames_per_second': 60
-                }
+    metadata = {"render.modes": ["human"], "video.frames_per_second": 60}
 
     def __init__(self):
         self.xsize = 30
@@ -68,7 +68,7 @@ class SmallWorldEnv(gym.Env):
         # if the resource is zero or below, it dies.
         done = bool((self.resource <= 0) or (self.steps > 2000))
         if done:
-            if self.resource <= 0: # punish only if it did not complete
+            if self.resource <= 0:  # punish only if it did not complete
                 reward = -3.0
 
         obs = self.makeegomap()
@@ -76,17 +76,18 @@ class SmallWorldEnv(gym.Env):
 
         return obs, reward, done, {}
 
-
     def makeegomap(self):
         # make an egocentric map
         radius = self.sight_radius
         diam = self.sight_diam
         for i in range(diam):
             for j in range(diam):
-                self.egomap[i, j, 0] = self.foodmap[self.wrapx(i - radius + self.xpos),
-                                                 self.wrapy(j - radius + self.ypos), 0]
+                self.egomap[i, j, 0] = self.foodmap[
+                    self.wrapx(i - radius + self.xpos),
+                    self.wrapy(j - radius + self.ypos),
+                    0,
+                ]
         return self.egomap
-
 
     def wrapx(self, xval):
         return xval % self.xsize
@@ -104,13 +105,16 @@ class SmallWorldEnv(gym.Env):
 
     def foodreset(self):
         # randomly locate food resource in the map
-        self.foodmap[:, :, 0] = (np.random.random((self.xsize, self.ysize)) < 0.05)\
-                       * np.random.random((self.xsize, self.ysize)) * self.maxfood
+        self.foodmap[:, :, 0] = (
+            (np.random.random((self.xsize, self.ysize)) < 0.05)
+            * np.random.random((self.xsize, self.ysize))
+            * self.maxfood
+        )
         self.drawfull = True
         self.eraseloc = None
         self.emergeloc = None
 
-    def render_boo(self, mode='human'):
+    def render_boo(self, mode="human"):
         return 0
 
     # def render_pygame(self, mode='human'):
@@ -130,8 +134,7 @@ class SmallWorldEnv(gym.Env):
     #     pygame.display.update()
     #     return True
 
-
-    def render(self, mode='human'):
+    def render(self, mode="human"):
         screen_width = self.xsize * 6
         screen_height = self.ysize * 6
         unitleng = 3
@@ -139,21 +142,29 @@ class SmallWorldEnv(gym.Env):
 
         if self.viewer is None:
             from gym.envs.classic_control import rendering
-            #self.viewer = rendering.Viewer(screen_width, screen_height)
+
+            # self.viewer = rendering.Viewer(screen_width, screen_height)
             l = unitleng
-            #square = rendering.FilledPolygon([(-l, -l), (-l, l), (l, l), (l, -l)])
-            #square.set_color(0.0, 1.0, 1.0)
-            #self.squaretrans = rendering.Transform()
-            #square.add_attr(self.squaretrans)
-            #self.viewer.add_geom(square)
+            # square = rendering.FilledPolygon([(-l, -l), (-l, l), (l, l), (l, -l)])
+            # square.set_color(0.0, 1.0, 1.0)
+            # self.squaretrans = rendering.Transform()
+            # square.add_attr(self.squaretrans)
+            # self.viewer.add_geom(square)
             self.viewer = rendering.SimpleImageViewer()
 
-        self.foodmap[:, :, 1] /= 2
+        self.foodmap[:, :, 1] /= 2  # this is a bad implemetation that changes the state
         self.foodmap[self.xpos, self.ypos, 1] = 100
-        #self.squaretrans.set_translation(self.xpos * scale, self.ypos * scale)
-        self.viewer.imshow(np.uint8(np.kron(np.transpose(np.flip(self.foodmap, 1) * 3, (1, 0, 2)), np.ones((scale, scale, 1)))))
+        # self.squaretrans.set_translation(self.xpos * scale, self.ypos * scale)
+        self.viewer.imshow(
+            np.uint8(
+                np.kron(
+                    np.transpose(np.flip(self.foodmap, 1) * 3, (1, 0, 2)),
+                    np.ones((scale, scale, 1)),
+                )
+            )
+        )
 
-        return True #self.viewer.render()
+        return True  # self.viewer.render()
 
     def close(self):
         if self.viewer:
