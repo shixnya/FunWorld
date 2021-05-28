@@ -57,6 +57,10 @@ class SmallWorldEnv(gym.Env):
         else:
             reward = 0.0
 
+        # upda the self position in the map
+        self.foodmap[:, :, 1] /= 2
+        self.foodmap[self.xpos, self.ypos, 1] = 100
+
         # randomly, add food to the field.
         # with 2% probability, it adds rand(0-100) value at one location.
         if np.random.rand() < 0.02:
@@ -152,8 +156,6 @@ class SmallWorldEnv(gym.Env):
             # self.viewer.add_geom(square)
             self.viewer = rendering.SimpleImageViewer()
 
-        self.foodmap[:, :, 1] /= 2  # this is a bad implemetation that changes the state
-        self.foodmap[self.xpos, self.ypos, 1] = 100
         # self.squaretrans.set_translation(self.xpos * scale, self.ypos * scale)
         self.viewer.imshow(
             np.uint8(

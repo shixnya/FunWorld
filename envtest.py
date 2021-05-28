@@ -3,12 +3,15 @@ import time
 from tqdm import trange
 import numpy as np
 
-env = gym.make("gym_smallworld:smallworld-v0")
+watch = False  # if True, it slows down playback
 
-print("reset, and initial rendering")
+
+print("Initializing the environment")
+env = gym.make("gym_smallworld:smallworld-v0")
 env.reset()
 env.render()
 action_num = env.action_space.n
+
 
 render_options = [False, True]
 
@@ -27,7 +30,8 @@ for i in range(len(render_options)):
 
         if render:
             env.render()
-            # time.sleep(0.01)
+            if watch:
+                time.sleep(0.01)
 
         if done:
             # show information
