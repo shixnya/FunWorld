@@ -9,7 +9,7 @@ watch = False  # if True, it slows down playback
 print("Initializing the environment")
 env = gym.make("gym_smallworld:smallworld-v0")
 env.reset()
-env.render()
+# env.render()
 action_num = env.action_space.n
 
 

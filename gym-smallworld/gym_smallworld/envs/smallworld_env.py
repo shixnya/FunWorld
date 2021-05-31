@@ -1,31 +1,42 @@
 import gym
 import numpy as np
+from collections import deque
 
 # import pygame
 from gym import error, spaces, utils
 from gym.utils import seeding
+import torch
 
 
 class SmallWorldEnv(gym.Env):
     metadata = {"render.modes": ["human"], "video.frames_per_second": 60}
 
     def __init__(self):
-        self.xsize = 30
-        self.ysize = 30
+        self.xsize = 84
+        self.ysize = 84
         self.xpos = self.xsize // 2
         self.ypos = self.ysize // 2
         self.resource = 100.0
         self.foodmap = np.zeros((self.xsize, self.ysize, 3))
         self.maxfood = 100.0
-        self.sight_radius = 5
+        self.sight_radius = 42
         self.sight_diam = self.sight_radius * 2 + 1
         self.egomap = np.zeros((self.sight_diam, self.sight_diam, 3))
         self.viewer = None
         self.action_space = spaces.Discrete(5)
         egohigh = np.ones_like(self.egomap) * self.maxfood
-        self.observation_space = spaces.Box(self.egomap, egohigh)
+        # self.observation_space = spaces.Box(self.egomap, egohigh)
+        self.observation_space = spaces.Box(
+            np.zeros((self.xsize, self.ysize), dtype=np.float32),
+            np.ones((self.xsize, self.ysize), dtype=np.float32),
+        )
+        self.window = 4
+        self.state_buffer = deque([], maxlen=self.window)
 
         self.steps = 0
+
+    def action_space(self):
+        return self.action_space.n
 
     def step(self, action):
         # action can be the following
@@ -44,7 +55,8 @@ class SmallWorldEnv(gym.Env):
             self.xpos = self.xpos % self.xsize
 
         if action == 0:
-            self.resource -= 0.5
+            # self.resource -= 0.5
+            self.resource -= 1.0  # tentatively turning it off for training
         else:
             self.resource -= 1.0
 
@@ -75,13 +87,23 @@ class SmallWorldEnv(gym.Env):
             if self.resource <= 0:  # punish only if it did not complete
                 reward = -3.0
 
-        obs = self.makeegomap()
+        # matching the observation to the rainbow
+        # obs = self.makeegomap()
+        self.state_buffer.append(self._get_state())
+        obs = self.state_buffer
+
         self.steps += 1
 
-        return obs, reward, done, {}
+        return torch.stack(list(obs), 0), reward, done, {}
+
+    def _get_state(self):
+        return torch.tensor(
+            self.foodmap[:, :, 0] + self.foodmap[:, :, 1], dtype=torch.float32
+        )
 
     def makeegomap(self):
         # make an egocentric map
+        # Use np.roll!!
         radius = self.sight_radius
         diam = self.sight_diam
         for i in range(diam):
@@ -105,7 +127,11 @@ class SmallWorldEnv(gym.Env):
         self.resource = 100
         self.steps = 0
         self.foodreset()
-        return self.makeegomap()
+        # return self.makeegomap()
+        for i in range(self.window):
+            self.state_buffer.append(self._get_state())
+
+        return torch.stack(list(self.state_buffer), 0)
 
     def foodreset(self):
         # randomly locate food resource in the map
